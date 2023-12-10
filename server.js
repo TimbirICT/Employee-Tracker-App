@@ -1,8 +1,29 @@
+// ./server.js
 const inquirer = require('inquirer');
-const { prompt, updateEmployeeRole, viewAllRoles, addRole, viewAllDepartments, addDepartment } = require('./promptFunctions');
+const db = require('./config/connection');
+const { updateEmployeeRole, viewAllRoles, addRole, viewAllDepartments, addDepartment } = require('./promptAnswers/promptFunctions');
+const fs = require('fs');
 
-
-
+db.connect((err) => {
+    if (err) {
+      console.error('Error connecting to MySQL server: ' + err.stack);
+      return;
+    }
+    console.log('Connected to MySQL server as id ' + db.threadId);
+  
+    // Read the contents of schema.sql
+    const schemaSql = fs.readFileSync('./sql/schema.sql', 'utf8');
+  
+    // Execute the contents of schema.sql to create the database and tables
+    db.query(schemaSql, (err) => {
+      if (err) throw err;
+      console.log('Database schema created successfully.');
+  
+      // Call the prompt function to start the application
+      prompt();
+    });
+  });
+  
 function prompt() {
   inquirer
     .prompt([
@@ -47,6 +68,3 @@ function prompt() {
       }
     });
 }
-
-// Call the prompt function to start the application
-prompt();
