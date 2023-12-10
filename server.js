@@ -1,70 +1,34 @@
-// ./server.js
 const inquirer = require('inquirer');
 const db = require('./config/connection');
-const { updateEmployeeRole, viewAllRoles, addRole, viewAllDepartments, addDepartment } = require('./promptAnswers/promptFunctions');
+const { startPrompt } = require('./promptAnswers/promptFunctions');
+const path = require('path'); // Add this line
 const fs = require('fs');
 
 db.connect((err) => {
-    if (err) {
-      console.error('Error connecting to MySQL server: ' + err.stack);
-      return;
-    }
-    console.log('Connected to MySQL server as id ' + db.threadId);
-  
-    // Read the contents of schema.sql
-    const schemaSql = fs.readFileSync('./sql/schema.sql', 'utf8');
-  
-    // Execute the contents of schema.sql to create the database and tables
-    db.query(schemaSql, (err) => {
+  if (err) {
+    console.error('Error connecting to MySQL server: ' + err.stack);
+    return;
+  }
+  console.log('Connected to MySQL server as id ' + db.threadId);
+
+  // Read the contents of schema.sql
+  const schemaSqlPath = path.join(__dirname, 'sql', 'schema.sql');
+  const schemaSql = fs.readFileSync(schemaSqlPath, 'utf8');
+
+  // Split the SQL content into individual statements
+  const sqlStatements = schemaSql.split(';').filter(statement => statement.trim() !== '');
+
+  // Execute each statement one by one
+  sqlStatements.forEach((statement, index) => {
+    db.query(statement, (err, result) => {
       if (err) throw err;
-      console.log('Database schema created successfully.');
-  
-      // Call the prompt function to start the application
-      prompt();
-    });
-  });
-  
-function prompt() {
-  inquirer
-    .prompt([
-      {
-        type: 'list',
-        name: 'menuOption',
-        message: 'What would you like to do?',
-        choices: [
-          'Update Employee Role',
-          'View All Roles',
-          'Add Role',
-          'View All Departments',
-          'Add Department',
-          'Quit',
-        ],
-      },
-    ])
-    .then((answers) => {
-      switch (answers.menuOption) {
-        case 'Update Employee Role':
-          updateEmployeeRole();
-          break;
-        case 'View All Roles':
-          viewAllRoles();
-          break;
-        case 'Add Role':
-          addRole();
-          break;
-        case 'View All Departments':
-          viewAllDepartments();
-          break;
-        case 'Add Department':
-          addDepartment();
-          break;
-        case 'Quit':
-          db.end();
-          console.log('Disconnected from the database.');
-          break;
-        default:
-          console.log('Invalid option');
-          break;
+
+      console.log(`Statement ${index + 1} executed successfully.`);
+
+      if (index === sqlStatements.length - 1) {
+        // If the last statement is executed, call the prompt function to start the application
+        startPrompt(db);
       }
     });
-}
+  });
+});
