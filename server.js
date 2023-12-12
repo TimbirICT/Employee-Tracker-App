@@ -1,34 +1,32 @@
-const inquirer = require('inquirer');
-const db = require('./config/connection');
-const { startPrompt } = require('./promptAnswers/promptFunctions');
-const path = require('path'); // Add this line
-const fs = require('fs');
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL server: ' + err.stack);
-    return;
-  }
-  console.log('Connected to MySQL server as id ' + db.threadId);
+const mysql = require('mysql2');
+const { startPrompt } = require('./prompt/promptFunctions'); // Adjust the path as needed
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-  // Read the contents of schema.sql
-  const schemaSqlPath = path.join(__dirname, 'sql', 'schema.sql');
-  const schemaSql = fs.readFileSync(schemaSqlPath, 'utf8');
+app.use(express.urlencoded({
+  extended: false
+}));
+app.use(express.json());
 
-  // Split the SQL content into individual statements
-  const sqlStatements = schemaSql.split(';').filter(statement => statement.trim() !== '');
 
-  // Execute each statement one by one
-  sqlStatements.forEach((statement, index) => {
-    db.query(statement, (err, result) => {
-      if (err) throw err;
-
-      console.log(`Statement ${index + 1} executed successfully.`);
-
-      if (index === sqlStatements.length - 1) {
-        // If the last statement is executed, call the prompt function to start the application
-        startPrompt(db);
-      }
-    });
-  });
+// Create a MySQL connection
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'Caesar2018!',
+  database: 'employment_db',
 });
+
+
+app.use((req, res) => {
+  res.status(404).end();
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+startPrompt(connection);
+
