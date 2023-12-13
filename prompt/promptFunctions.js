@@ -1,12 +1,8 @@
 const inquirer = require('inquirer');
-const dbConnection = require('../server'); 
-
-function executeQuery(dbConnection, query, values) {
-  return dbConnection.promise().query(query, values);
-}
+const dbConnection = require('../server'); // Adjust the path as needed
 
 function updateEmployeeRole(dbConnection, employeeId, newRoleId) {
-  const query = 'UPDATE employees SET role_id = ? WHERE id = ?';
+  const query = 'UPDATE employee SET role_id = ? WHERE id = ?';
   dbConnection.query(query, [newRoleId, employeeId], (error, results) => {
     if (error) {
       console.error(`Error executing query: ${query}`, error);
@@ -29,9 +25,9 @@ function viewAllRoles(dbConnection) {
   });
 }
 
-async function addRole(dbConnection) {
-  try {
-    const answers = await inquirer.prompt([
+function addRole(dbConnection) {
+  inquirer
+    .prompt([
       {
         type: 'input',
         name: 'title',
@@ -47,20 +43,21 @@ async function addRole(dbConnection) {
         name: 'departmentId',
         message: 'Enter the department ID for the new role:',
       },
-    ]);
-
-    const { title, salary, departmentId } = answers;
-    const query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
-    const values = [title, salary, departmentId];
-
-    await executeQuery(dbConnection, query, values);
-
-    startPrompt(dbConnection);
-  } catch (error) {
-    console.error('Error in addRole:', error);
-  }
+    ])
+    .then((answers) => {
+      const { title, salary, departmentId } = answers;
+      const query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
+      const values = [title, salary, departmentId];
+      dbConnection.query(query, values, (error, results) => {
+        if (error) {
+          console.error(`Error executing query: ${query}`, error);
+        } else {
+          console.log('Role added:', results);
+        }
+        startPrompt(dbConnection);
+      });
+    });
 }
-
 
 function viewAllDepartments(dbConnection) {
   console.log('View All Departments function called');
@@ -78,26 +75,9 @@ function viewAllDepartments(dbConnection) {
   });
 }
 
-async function addDepartment(dbConnection) {
-  try {
-    const answer = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'departmentName',
-        message: 'Enter the name of the new department:',
-      },
-    ]);
-
-    const { departmentName } = answer;
-    const query = 'INSERT INTO department (name) VALUES (?)';
-    const values = [departmentName];
-
-    await executeQuery(dbConnection, query, values);
-
-    startPrompt(dbConnection);
-  } catch (error) {
-    console.error('Error in addDepartment:', error);
-  }
+function addDepartment() {
+  // Placeholder implementation for adding a department
+  console.log('Add Department function called');
 }
 
 function startPrompt() {
@@ -144,7 +124,6 @@ function startPrompt() {
       }
     });
 }
-
 
 module.exports = {
   startPrompt,

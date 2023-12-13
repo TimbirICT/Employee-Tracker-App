@@ -22,17 +22,9 @@ app.use((req, res) => {
   res.status(404).end();
 });
 
-// Ensure that the database connection is established before calling startPrompt
-dbConnection.connect((err) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-  } else {
-    console.log('Connected to the database');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      startPrompt(dbConnection);
-    });
-  }
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  startPrompt(dbConnection); // Move startPrompt here
 });
 
 module.exports = dbConnection;
