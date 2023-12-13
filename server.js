@@ -1,5 +1,4 @@
 // server.js
-// server.js
 const mysql = require('mysql2');
 const express = require('express');
 const app = express();
@@ -23,9 +22,17 @@ app.use((req, res) => {
   res.status(404).end();
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  startPrompt(dbConnection); // Move startPrompt here
+// Ensure that the database connection is established before calling startPrompt
+dbConnection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to the database:', err);
+  } else {
+    console.log('Connected to the database');
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      startPrompt(dbConnection);
+    });
+  }
 });
 
 module.exports = dbConnection;
