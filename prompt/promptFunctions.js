@@ -1,32 +1,78 @@
-// promptFunctions.js
 const inquirer = require('inquirer');
-const connection = require('../server'); // Adjust the path as needed
-
-function updateEmployeeRole() {
-  // Placeholder implementation for updating employee role
-  console.log('Update Employee Role function called');
-}
+const dbConnection = require('../server'); // Adjust the path as needed
 
 
-function viewAllRoles() {
-  connection.query('SELECT * FROM role', (error, results) => {
+function updateEmployeeRole(dbConnection, employeeId, newRoleId) {
+  const query = 'UPDATE employees SET role_id = ? WHERE id = ?';
+  dbConnection.query(query, [newRoleId, employeeId], (error, results) => {
     if (error) {
-      console.error('Error executing SELECT query for roles:', error);
+      console.error(`Error executing query: ${query}`, error);
     } else {
       console.log('Roles:', results);
     }
-    startPrompt(connection);
+    startPrompt(dbConnection);
   });
 }
 
-function addRole() {
-  // Placeholder implementation for adding a role
-  console.log('Add Role function called');
+function viewAllRoles(dbConnection) {
+  const query = 'SELECT * FROM role';
+  dbConnection.query(query, (error, results) => {
+    if (error) {
+      console.error(`Error executing query: ${query}`, error);
+    } else {
+      console.log('Roles:', results);
+    }
+    startPrompt(dbConnection);
+  });
 }
 
-function viewAllDepartments() {
-  // Placeholder implementation for viewing all departments
+function addRole(dbConnection) {
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'title',
+        message: 'Enter the title of the new role:',
+      },
+      {
+        type: 'input',
+        name: 'salary',
+        message: 'Enter the salary for the new role:',
+      },
+      {
+        type: 'input',
+        name: 'departmentId',
+        message: 'Enter the department ID for the new role:',
+      },
+    ])
+    .then((answers) => {
+      const { title, salary, departmentId } = answers;
+      const query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
+      const values = [title, salary, departmentId];
+      dbConnection.query(query, values, (error, results) => {
+        if (error) {
+          console.error(`Error executing query: ${query}`, error);
+        } else {
+          console.log('Role added:', results);
+        }
+        startPrompt(dbConnection);
+      });
+    });
+}
+function viewAllDepartments(dbConnection) {
   console.log('View All Departments function called');
+
+  const query = 'SELECT * FROM department';
+
+  dbConnection.query(query, (error, results) => {
+    if (error) {
+      console.error('Error executing SELECT query for departments:', error);
+    } else {
+      console.log('Departments:', results);
+    }
+
+    startPrompt(dbConnection);
+  });
 }
 
 function addDepartment() {
@@ -54,22 +100,22 @@ function startPrompt() {
     .then((answers) => {
       switch (answers.menuOption) {
         case 'Update Employee Role':
-          updateEmployeeRole();
+          updateEmployeeRole(dbConnection);
           break;
         case 'View All Roles':
-          viewAllRoles();
+          viewAllRoles(dbConnection);
           break;
         case 'Add Role':
-          addRole();
+          addRole(dbConnection);
           break;
         case 'View All Departments':
-          viewAllDepartments();
+          viewAllDepartments(dbConnection);
           break;
         case 'Add Department':
-          addDepartment();
+          addDepartment(dbConnection);
           break;
         case 'Quit':
-          db.end();
+          dbConnection.end();
           console.log('Disconnected from the database.');
           break;
         default:
@@ -78,6 +124,7 @@ function startPrompt() {
       }
     });
 }
+
 
 module.exports = {
   startPrompt,

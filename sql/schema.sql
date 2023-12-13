@@ -1,21 +1,19 @@
--- schema.sql
 
--- Drop the database if it exists
 DROP DATABASE IF EXISTS employment_db;
 
--- Create the database
+
 CREATE DATABASE employment_db;
 
--- Use the created database
+
 USE employment_db;
 
--- Create the department table
+
 CREATE TABLE department (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(30) NOT NULL
 );
 
--- Create the role table
+-- Creates the role table
 CREATE TABLE role (
   id INT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(30) NOT NULL,
@@ -24,7 +22,7 @@ CREATE TABLE role (
   FOREIGN KEY (department_id) REFERENCES department(id)
 );
 
--- Create the employee table
+-- Creates  the employee table
 CREATE TABLE employee (
   id INT PRIMARY KEY AUTO_INCREMENT,
   first_name VARCHAR(30) NOT NULL,

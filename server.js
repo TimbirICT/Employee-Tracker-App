@@ -1,24 +1,23 @@
-
+// server.js
+// server.js
 const mysql = require('mysql2');
-const { startPrompt } = require('./prompt/promptFunctions'); // Adjust the path as needed
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3001;
+const { startPrompt } = require('./prompt/promptFunctions');
 
 app.use(express.urlencoded({
   extended: false
 }));
 app.use(express.json());
 
-
 // Create a MySQL connection
-const connection = mysql.createConnection({
+const dbConnection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: 'Caesar2018!',
   database: 'employment_db',
 });
-
 
 app.use((req, res) => {
   res.status(404).end();
@@ -26,7 +25,7 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startPrompt(dbConnection); // Move startPrompt here
 });
 
-startPrompt(connection);
-
+module.exports = dbConnection;
